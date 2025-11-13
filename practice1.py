@@ -40,3 +40,31 @@ else:
 # 출력
 print("기사 제목:", Title)
 print("기사 본문:", Body[:100], "...")
+
+# BeautifulSoup이 실제로 HTMl을 어떻게 구조화했는지, soup 객체 살펴보기
+print(soup.prettify()[:500])
+
+# BeautifulSoup이 제공하는 단축속성 중 title
+print(soup.title)
+
+# title 태그 안의 순수 텍스트만 추출
+print(soup.title.get_text())
+
+# 위에 기사 본문에서 특정 태그 추출
+print(ArticleTag)
+
+# 태그의 이름
+print(ArticleTag.name)
+
+# 태그의 속성 딕셔너리
+print(ArticleTag.attrs)
+
+# 태그의 속성 직접 접근, 딕셔너리 형태이므로 ['키']의 형태
+print(ArticleTag['id'])
+
+# 추출한 태그 내부 하위 태그 탐색
+print(ArticleTag.find_all("img"))
+
+# 찾은 하위 태그 속성 직접 접근
+for img in ArticleTag.find_all("img"):
+    print(img['data-src'])
