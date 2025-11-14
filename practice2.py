@@ -55,4 +55,5 @@ for i, a in enumerate(TotalTitles[:5],1):
 
 # csv 파일로 저장 - pandas 사용
 df = pd.DataFrame({"title":TotalTitles})
-df.to_csv("news_titles_pandas.csv", index=False, encoding="utf-8-sig") # utf-8로 하면 엑셀에서 한글 깨짐
+filename_for_pandas = f"news_titles_pandas_{int(time.time())}.csv"
+df.to_csv(filename_for_pandas, index=False, encoding="utf-8-sig") # utf-8로 하면 엑셀에서 한글 깨짐
