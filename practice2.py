@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+import pandas as pd
 
 # 페이지네이션된 목록에 있는 기사의 제목들을 받아오는 함수
 def crawl_title(page):
@@ -51,3 +52,7 @@ else:
 print("상위 5개 기사 제목 미리보기")
 for i, a in enumerate(TotalTitles[:5],1):
     print(f"{i}. {a}")
+
+# csv 파일로 저장 - pandas 사용
+df = pd.DataFrame({"title":TotalTitles})
+df.to_csv("news_titles_pandas.csv", index=False, encoding="utf-8-sig") # utf-8로 하면 엑셀에서 한글 깨짐
