@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import pandas as pd
+import csv
 
 # 페이지네이션된 목록에 있는 기사의 제목들을 받아오는 함수
 def crawl_title(page):
@@ -57,3 +58,11 @@ for i, a in enumerate(TotalTitles[:5],1):
 df = pd.DataFrame({"title":TotalTitles})
 filename_for_pandas = f"news_titles_pandas_{int(time.time())}.csv"
 df.to_csv(filename_for_pandas, index=False, encoding="utf-8-sig") # utf-8로 하면 엑셀에서 한글 깨짐
+
+# csv 파일로 저장 - csv 모듈 사용 - writerow
+filename_for_csv = f"news_titles_csv_writerow_{int(time.time())}.csv"
+with open(filename_for_csv, "w", newline="", encoding="utf-8-sig") as f:
+    writer = csv.writer(f)
+    writer.writerow(["title"])
+    for t in TotalTitles:
+        writer.writerow([t])
