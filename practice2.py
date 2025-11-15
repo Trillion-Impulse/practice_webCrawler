@@ -66,3 +66,11 @@ with open(filename_for_csv, "w", newline="", encoding="utf-8-sig") as f:
     writer.writerow(["title"])
     for t in TotalTitles:
         writer.writerow([t])
+
+# csv 파일로 저장 - csv 모듈 사용 - writerows
+filename_for_csv = f"news_titles_csv_writerows_{int(time.time())}.csv"
+rows = [[t]for t in TotalTitles] # writerows는 리스트의 리스트를 받아야함
+with open(filename_for_csv, "w", newline="", encoding="utf-8-sig") as f:
+    writer = csv.writer(f)
+    writer.writerow(["title"])
+    writer.writerows(rows)
