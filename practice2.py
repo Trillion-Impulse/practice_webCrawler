@@ -60,17 +60,26 @@ filename_for_pandas = f"news_titles_pandas_{int(time.time())}.csv"
 df.to_csv(filename_for_pandas, index=False, encoding="utf-8-sig") # utf-8로 하면 엑셀에서 한글 깨짐
 
 # csv 파일로 저장 - csv 모듈 사용 - writerow
-filename_for_csv = f"news_titles_csv_writerow_{int(time.time())}.csv"
-with open(filename_for_csv, "w", newline="", encoding="utf-8-sig") as f:
+filename_for_csv_writerow = f"news_titles_csv_writerow_{int(time.time())}.csv"
+with open(filename_for_csv_writerow, "w", newline="", encoding="utf-8-sig") as f:
     writer = csv.writer(f)
     writer.writerow(["title"])
     for t in TotalTitles:
         writer.writerow([t])
 
 # csv 파일로 저장 - csv 모듈 사용 - writerows
-filename_for_csv = f"news_titles_csv_writerows_{int(time.time())}.csv"
+filename_for_csv_writerows = f"news_titles_csv_writerows_{int(time.time())}.csv"
 rows = [[t]for t in TotalTitles] # writerows는 리스트의 리스트를 받아야함
-with open(filename_for_csv, "w", newline="", encoding="utf-8-sig") as f:
+with open(filename_for_csv_writerows, "w", newline="", encoding="utf-8-sig") as f:
     writer = csv.writer(f)
     writer.writerow(["title"])
     writer.writerows(rows)
+
+# csv 파일로 저장 - csv 모듈 사용 - DictWriter
+filename_for_csv_DictWriter = f"news_titles_csv_dictwriter_{int(time.time())}.csv"
+dict_rows = [{"title":t}for t in TotalTitles]
+with open(filename_for_csv_DictWriter,"w",newline="",encoding="utf-8-sig") as f:
+    fiedlnames = ["title"]
+    writer = csv.DictWriter(f, fieldnames=fiedlnames)
+    writer.writeheader() # dictwriter 전용 메서드로 fieldnames 리스트에 있는 값을 자동으로 csv 첫 줄로 써줌
+    writer.writerows(dict_rows) # writerow도 가능
