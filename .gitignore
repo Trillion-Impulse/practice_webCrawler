@@ -1,5 +1,14 @@
 # 가상환경 설정 디렉토리
 venv/
 
+# 환경 변수
+.env
+
+# Python 캐시 파일
+# 폴더
+__pycache__/
+# 하위 파일
+*.pyc
+
 # csv 파일
 *.csv
