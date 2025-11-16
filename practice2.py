@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import time
 import pandas as pd
 import csv
+import pymysql
+from config import DB_CONFIG
 
 # 페이지네이션된 목록에 있는 기사의 제목들을 받아오는 함수
 def crawl_title(page):
@@ -83,3 +85,26 @@ with open(filename_for_csv_DictWriter,"w",newline="",encoding="utf-8-sig") as f:
     writer = csv.DictWriter(f, fieldnames=fieldnames)
     writer.writeheader() # dictwriter 전용 메서드로 fieldnames 리스트에 있는 값을 자동으로 csv 첫 줄로 써줌
     writer.writerows(dict_rows) # writerow도 가능
+
+# MySQL DB로 저장 - pymysql 사용
+def save_to_mysql(titles):
+    # connect로 DB 연결 객체 생성 / **은 dict언패킹
+    conn = pymysql.connect(**DB_CONFIG)
+
+    # 커서 연결 객체 생성
+    cur = conn.cursor()
+    
+    # 테이블에 저장
+    sql = "INSERT INTO news_titles (title) VALUES (%s)"
+    values = [(t,)for t in titles]
+    cur.executemany(sql, values)
+    
+    # 커밋은 connection 객체에서 수행
+    conn.commit()
+    
+    cur.close()
+    conn.close()
+
+    print(f"MySQL에 DB {len(titles)}개 저장 완료")
+
+save_to_mysql(TotalTitles)
