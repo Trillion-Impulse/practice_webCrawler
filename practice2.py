@@ -79,7 +79,7 @@ with open(filename_for_csv_writerows, "w", newline="", encoding="utf-8-sig") as 
 filename_for_csv_DictWriter = f"news_titles_csv_dictwriter_{int(time.time())}.csv"
 dict_rows = [{"title":t}for t in TotalTitles]
 with open(filename_for_csv_DictWriter,"w",newline="",encoding="utf-8-sig") as f:
-    fiedlnames = ["title"]
-    writer = csv.DictWriter(f, fieldnames=fiedlnames)
+    fieldnames = ["title"]
+    writer = csv.DictWriter(f, fieldnames=fieldnames)
     writer.writeheader() # dictwriter 전용 메서드로 fieldnames 리스트에 있는 값을 자동으로 csv 첫 줄로 써줌
     writer.writerows(dict_rows) # writerow도 가능
