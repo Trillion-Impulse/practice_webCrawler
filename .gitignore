@@ -12,3 +12,6 @@ __pycache__/
 
 # csv 파일
 *.csv
+
+# json 파일
+*.json
