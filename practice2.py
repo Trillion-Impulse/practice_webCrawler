@@ -86,6 +86,11 @@ with open(filename_for_csv_DictWriter,"w",newline="",encoding="utf-8-sig") as f:
     writer.writeheader() # dictwriter 전용 메서드로 fieldnames 리스트에 있는 값을 자동으로 csv 첫 줄로 써줌
     writer.writerows(dict_rows) # writerow도 가능
 
+# json 파일로 저장 - pandas 사용
+df = pd.DataFrame({"titles": TotalTitles})
+filename_for_json_pandas = f"news_titles_json_pandas_{int(time.time())}.json"
+df.to_json(filename_for_json_pandas, orient="records", force_ascii=False, indent=4)
+
 # MySQL DB로 저장 - pymysql 사용
 def save_to_mysql(titles):
     # connect로 DB 연결 객체 생성 / **은 dict언패킹
