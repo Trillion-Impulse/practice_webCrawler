@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 
@@ -23,26 +24,28 @@ sport_tab.click()
 # 스포츠 탭 클릭 후 로딩 대기
 time.sleep(2)
 
-# 스크롤 끝까지 내리기
-prev_height = driver.execute_script("return document.documentElement.scrollHeight")
+# 스크롤을 내려서 새 영상이 등장할 때 까지 기다리는 함수
+def wait_for_new_video(driver, before_count, timeout=10):
+    WebDriverWait(driver, timeout).until(
+        lambda d: len(d.find_elements(By.CSS_SELECTOR, "a#video-title-link")) > before_count
+    )
 
+# 무한 스크롤
 while True:
-    # 스크롤 맨 아래로 이동
+    # 스크롤 전 영상 개수
+    before = len(driver.find_elements(By.CSS_SELECTOR, "a#video-title-link"))
+
+    # 맨 아래로 스크롤
     driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
-    time.sleep(2) # 로딩 대기
 
-    # 현재 높이
-    curr_height = driver.execute_script("return document.documentElement.scrollHeight")
-
-    # 더 이상 증가 없다면 스크롤 종료
-    if curr_height == prev_height:
-        print("모든 영상 로딩 완료")
+    # 새 영상이 로딩될 때까지 대기
+    try:
+        wait_for_new_video(driver, before, timeout=10)
+    except TimeoutException:
         print("스크롤 종료")
         break
 
-    prev_height = curr_height
-
-# 영상 제목 크롤링
+# 영상 제목 수집
 title_elements = driver.find_elements(By.CSS_SELECTOR, "a#video-title-link")
 
 # title 속성이 없는 경우 제외하고 모든 title 속성을 가져옴
