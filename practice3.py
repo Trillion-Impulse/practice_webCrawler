@@ -33,8 +33,14 @@ try:
             lambda d: len(d.find_elements(By.CSS_SELECTOR, "a#video-title-link")) > before_count
         )
 
-    # 무한 스크롤
-    while True:
+    # 무한 루프 및 과부하 방지
+    max_scrolls = 20
+    scroll_count = 0
+
+    # 무한 스크롤 - 사실상 유한 스크롤
+    while scroll_count < max_scrolls:
+        scroll_count += 1
+
         # 스크롤 전 영상 개수
         before = len(driver.find_elements(By.CSS_SELECTOR, "a#video-title-link"))
 
