@@ -75,6 +75,107 @@
     - CSS Selector, XPath 등이 모두 DOM 기반
     - 자바스크립트로 변경된 내용도 DOM에 반영되므로, 실시간 상태를 읽을 수 있음(Selenium)
 
+### HTTP Request
+- HTTP 요청
+- 클라이언트(브라우저, 앱, 크롤러)가 서버에게 리소스나 작업을 요청할 때 보내는 메시지
+- 웹에서 이루어지는 모든 데이터 통신의 기본 단위이며, HTTP 프로토콜을 구성하는 요소 중 하나
+- HTTP Request의 구성 요소
+    1. Request Line (요청 시작줄)
+        - 요청의 목적을 나타내는 한 줄
+            ```
+            GET /index.html HTTP/1.1
+            ```
+            - HTTP Method: GET, POST, PUT, DELETE, PATCH …
+            - Request Target: 요청할 경로(/index.html)
+            - HTTP Version: HTTP/1.1, HTTP/2 등                     
+    1. Request Headers (요청 헤더)
+        - 요청에 대한 부가 정보를 전달하는 필드
+            ```
+            Host: example.com
+            User-Agent: Mozilla/5.0 ...
+            Accept: text/html
+            Accept-Language: ko-KR
+            Authorization: Bearer xxx...
+            ```
+        - 헤더의 역할
+            - 클라이언트 정보를 서버에 전달 (User-Agent, Referer 등)
+            - 인증 정보 제공 (Authorization)
+            - 원하는 데이터 종류 지정 (Accept)
+            - 언어, 인코딩, 쿠키 등 상태 정보 제공
+    1. Request Body (요청 본문, 선택적)
+        - 데이터가 필요한 요청에서만 추가됨
+        - GET은 보통 없음, POST/PUT/PATCH 등의 요청에서 사용
+            ```
+            {
+                "username": "test",
+                "password": "1234"
+            }
+            ```
+- HTTP Request의 동작 과정 (간단 흐름)
+    1. 클라이언트가 URL로 서버에 요청 Request를 보냄
+    1. 요청은 TCP/IP를 통해 서버로 전달됨
+    1. 서버는 요청을 분석하고 처리
+    1. 그 결과를 HTTP Response로 다시 클라이언트에게 전송
+    1. 클라이언트는 응답을 화면에 렌더링하거나 데이터를 처리
+- 크롤링 관점에서 본 HTTP Request
+    - 웹 크롤러는 브라우저처럼 보이기 위해 HTTP Request를 직접 구성하여 서버에 요청을 보내는 프로그램
+    - 따라서 HTTP Request를 이해하는 것은 크롤링의 핵심 기술
+    - HTTP Request가 크롤링에서 중요한 이유
+        1. 브라우저 대신 “프로그래밍 방식”으로 요청을 보내야 함
+            - 크롤러는 HTML 페이지, API 응답, 이미지, JSON 데이터 등을 얻기 위해 직접 HTTP Request를 생성해 서버에 보내야 한다.
+        1. 서버는 요청 헤더를 분석해 크롤러를 차단하기도 함
+            - 특정 헤더(User-Agent, Referer, Cookie 등)가 없으면, 봇으로 판단해 접속을 막는 경우가 많다.
+        1. 올바른 요청을 보내야 원하는 데이터가 받아짐
+            - 예를 들어로그인 후 데이터는 쿠키나 토큰이 필요함 → Request Header 완성도가 요구됨
+    - 크롤러가 구성해야 하는 HTTP Request의 핵심 요소
+        1. Method (요청 방식)
+            - GET : HTML, JSON 등 조회
+            - POST : 로그인, 검색, 폼 제출
+            - PUT/PATCH/DELETE : 대부분 관리용 API
+            - 크롤링에서는 GET + POST 조합이 거의 전부
+        1. Headers (가장 중요!)
+            - 크롤링 시 필수 또는 매우 중요한 헤더
+                | 헤더                  | 역할                            |
+                | ------------------- | ----------------------------- |
+                | **User-Agent**      | 브라우저/봇 정보. 크롤링 차단 회피 핵심       |
+                | **Referer**         | 이전 페이지 정보. 없으면 막는 사이트 있음      |
+                | **Cookie**          | 로그인/세션 정보 유지                  |
+                | **Accept**          | 원하는 응답 타입 지정 (HTML/JSON 등)    |
+                | **Accept-Language** | 언어 설정                         |
+                | **Authorization**   | JWT, Bearer Token 등 인증 API 접근 |
+            - User-Agent + Cookie + Referer 조합은 많은 사이트에서 사람이 접속했다고 판단하는 최소 조건
+        1. Body (POST 요청 시 사용)
+            - 로그인, 검색, 필터 적용 등에 필요
+                ```
+                {
+                    "keyword": "python",
+                    "page": 1
+                }
+                ```
+    - 크롤러가 실제로 HTTP Request를 쓰는 방식
+        - Requests 기반 크롤러
+            - 직접 요청 구성 → 서버는 봇으로 오인할 가능성 높음 → 따라서 헤더를 신경 써서 “브라우저처럼” 구성해야 함
+        - Selenium 기반 크롤러
+            - 실제 브라우저가 HTTP Request를 전송하므로 일반적인 Request Headers는 자동으로 채워짐
+            - 필요할 때만 User-Agent나 쿠키를 수정함
+    - 크롤링에서 HTTP Request와 관련된 주요 문제들
+        | 문제               | 원인                        | 해결                             |
+        | ---------------- | ------------------------- | ------------------------------ |
+        | 403 Forbidden    | User-Agent 없음, Referer 없음 | 적절한 헤더 추가                      |
+        | 로그인 유지 안 됨       | Cookie 누락                 | 세션 유지 + 쿠키 전송                  |
+        | API 호출 실패        | Authorization 누락          | 토큰 발급 후 Header에 포함             |
+        | 모바일/PC 페이지 다르게 뜸 | User-Agent 영향             | 모바일 UA/데스크탑 UA 설정              |
+        | 계속 리디렉션          | CSRF 토큰 없음                | Request Body + Header에 CSRF 포함 |
+    - 크롤링 관점에서 HTTP Request 전체 구조 요약
+        ```
+        HTTP Request
+        ├── Method        ← GET / POST 요청의 종류
+        ├── URL           ← 요청할 주소
+        ├── Headers       ← User-Agent / Cookie / Referer / Accept …
+        ├── Body          ← POST/PUT에서 사용하는 데이터
+        └── Session/Cookie← 로그인 유지 시 필요
+        ```
+
 ### BeautifulSoup
 
 #### find vs select 비교
