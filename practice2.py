@@ -101,23 +101,30 @@ df.to_json(filename_for_json_pandas, orient="records", force_ascii=False, indent
 
 # MySQL DB로 저장 - pymysql 사용
 def save_to_mysql(titles):
-    # connect로 DB 연결 객체 생성 / **은 dict언패킹
-    conn = pymysql.connect(**DB_CONFIG)
+    conn = None
+    cur = None
+    try:
+        # connect로 DB 연결 객체 생성 / **은 dict언패킹
+        conn = pymysql.connect(**DB_CONFIG)
 
-    # 커서 연결 객체 생성
-    cur = conn.cursor()
-    
-    # 테이블에 저장
-    sql = "INSERT INTO news_titles (title) VALUES (%s)"
-    values = [(t,)for t in titles]
-    cur.executemany(sql, values)
-    
-    # 커밋은 connection 객체에서 수행
-    conn.commit()
-    
-    cur.close()
-    conn.close()
+        # 커서 연결 객체 생성
+        cur = conn.cursor()
+        
+        # 테이블에 저장
+        sql = "INSERT INTO news_titles (title) VALUES (%s)"
+        values = [(t,)for t in titles]
+        cur.executemany(sql, values)
+        
+        # 커밋은 connection 객체에서 수행
+        conn.commit()
 
-    print(f"MySQL에 DB {len(titles)}개 저장 완료")
+        print(f"MySQL에 DB {len(titles)}개 저장 완료")
+
+    except pymysql.MySQLError as e:
+        print("DB 저장 중 오류 발생:", e)
+
+    finally:
+        cur.close()
+        conn.close()
 
 save_to_mysql(TotalTitles)
