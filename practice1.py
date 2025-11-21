@@ -65,6 +65,11 @@ print(ArticleTag['id'])
 # 추출한 태그 내부 하위 태그 탐색
 print(ArticleTag.find_all("img"))
 
-# 찾은 하위 태그 속성 직접 접근
+# 찾은 하위 태그 속성 dict의 key로 직접 접근
 for img in ArticleTag.find_all("img"):
     print(img['data-src'])
+
+# CSS selector 기반 데이터 추출 및 get을 통한 안전한 접근
+ArticleTag_select = soup.select("article#dic_area img")
+for img in ArticleTag_select:
+    print(img.get("data-src"))
