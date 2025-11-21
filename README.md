@@ -39,3 +39,38 @@
 
 - python은 빠르게 개발하고 실험해 볼 수 있는 환경을 제공, 간단한 크롤링이나 동적 페이지 크롤링을 할 때 유리
 - java는 대규모 크롤링이나 성능이 중요한 경우에 더 적합, 멀티스레딩 및 고급 설정을 통해 더 많은 데이터를 효율적으로 처리 가능
+
+## 관련 지식
+
+### DOM
+- Document Object Model
+- 웹페이지의 구조를 트리 형태로 표현한 표준화된 모델
+- 브라우저가 HTML 문서를 읽으면, 그 문서를 **태그 하나하나 객체(Object)** 로 변환해서 트리 구조로 만듬
+- HTML 코드를 브라우저가 이해할 수 있는 구조화된 객체들로 바꾼 것
+- 브라우저가 HTML을 해석해 만든 트리 구조의 문서 모델
+- 예시
+    - HTML 코드
+    ```
+    <html>
+        <body>
+            <h1>Hello</h1>
+            <p>World</p>
+        </body>
+    </html>
+    ```
+    - DOM
+        - 브라우저 내부의 트리모델
+        - 각 태그는 “노드(node)” 라고 불리고, 서로 부모/자식 관계를 가짐
+    ```
+    Document
+    └── html
+        └── body
+            ├── h1 ("Hello")
+            └── p ("World")
+    ```
+- 웹 크롤러에서 DOM이 중요한 이유
+    - 원하는 요소를 찾을 때 DOM 구조를 기준으로 찾음
+        - BeautifulSoup: find(), select()
+        - Selenium: find_element(By.CSS_SELECTOR, ...)
+    - CSS Selector, XPath 등이 모두 DOM 기반
+    - 자바스크립트로 변경된 내용도 DOM에 반영되므로, 실시간 상태를 읽을 수 있음(Selenium)
