@@ -7,7 +7,7 @@ import pymysql
 from config import DB_CONFIG
 
 # 페이지네이션된 목록에 있는 기사의 제목들을 받아오는 함수
-def crawl_title(page):
+def crawl_title(page, max_retries=3, delay=2):
     # 크롤링할 uRL
     url = f"https://finance.naver.com/news/mainnews.naver?&page={page}"
 
@@ -17,16 +17,26 @@ def crawl_title(page):
                         "AppleWebKit/537.36 (KHTML, like Gecko) "
                         "Chrome/120.0.0.0 Safari/537.36"
     }
+    
+    print(f"{page} 페이지 크롤링 중 ...")
 
-    # HTML GET 요청
-    r = requests.get(url,headers=headers)
-
-    # 상태 코드 점검
-    if r.status_code != 200:
-        print("요청 실패", r.status_code)
-        return []
+    attempt = 0
+    while attempt < max_retries:
+        attempt+=1
+        try:
+            # HTML GET 요청
+            r = requests.get(url,headers=headers, timeout=5)
+            # 상태 코드 점검
+            if r.status_code == 200:
+                break # 요청 성공 시 반복 종료
+            else:
+                print(f"요청 실패 (상태 코드: {r.status_code}) - {attempt}/{max_retries} 재시도")
+        except requests.exceptions.RequestException as e:
+            print(f"예외 발생: {e} - {attempt}/{max_retries} 재시도")
+        time.sleep(delay)
     else:
-        print(f"{page} 페이지 크롤링 중 ...")
+        print(f"크롤링 실패: {url}")
+        return []
     
     # BeautifulSoup 객체 생성
     Soup = BeautifulSoup(r.text, "html.parser")
@@ -34,10 +44,8 @@ def crawl_title(page):
     # 기사 추출
     Articles = Soup.find_all("dd", class_="articleSubject")
 
-    Titles = []
-    for i in Articles:
-        Title = i.get_text(strip=True)
-        Titles.append(Title)
+    # 기사 제목 추출
+    Titles = [t.get_text(strip=True)for t in Articles]
     
     return Titles
 
