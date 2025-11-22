@@ -1,6 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
 import sys
+import logging
+
+logging.basicConfig(
+    filename="crawler.log",
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    encoding="utf-8"
+)
 
 # 크롤링할 URL 
 url = "https://n.news.naver.com/mnews/article/011/0004555589"
@@ -11,34 +19,44 @@ headers = {
                   "AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/120.0.0.0 Safari/537.36"
 }
+
 try:
+    logging.info(f"크롤링 시작: {url}")
     # HTML 요청
     r = requests.get(url, headers=headers)
     r.raise_for_status()
     html = r.text
 except requests.exceptions.RequestException as e:
-        print("요청 실패:",e)
-        sys.exit(1)
+    logging.error(f"HTTP 요청 실패: {e}")
+    print("요청 실패:",e)
+    sys.exit(1) # 종료 코드 1: 네트워크/HTTP 오류
 
-# beautifulsoup 객체 생성
-soup = BeautifulSoup(html, "html.parser")
+try:
+    # beautifulsoup 객체 생성
+    soup = BeautifulSoup(html, "html.parser")
 
-# 기사 제목 추출 (class 기반)
-TitleTag = soup.find("h2", class_="media_end_head_headline")
-Title = TitleTag.get_text(strip=True) if TitleTag else "제목 없음"
+    # 기사 제목 추출 (class 기반)
+    TitleTag = soup.find("h2", class_="media_end_head_headline")
+    Title = TitleTag.get_text(strip=True) if TitleTag else "제목 없음"
 
-# 기사 본문 추출 (id 기반)
-ArticleTag = soup.find("article", id="dic_area")
-if ArticleTag:
-    for br in ArticleTag.find_all("br"):
-        br.replace_with("\n")
-    Body = ArticleTag.get_text(strip=True)
-else:
-    Body = "본문 없음"
+    # 기사 본문 추출 (id 기반)
+    ArticleTag = soup.find("article", id="dic_area")
+    if ArticleTag:
+        for br in ArticleTag.find_all("br"):
+            br.replace_with("\n")
+        Body = ArticleTag.get_text(strip=True)
+    else:
+        Body = "본문 없음"
+    
+    logging.info("HTML 파싱 완료")
+except Exception as e:
+    logging.error(f"HTML 파싱 실패: {e}")
+    sys.exit(2) # 종료 코드 2: 파싱 오류
 
 # 출력
 print("기사 제목:", Title)
 print("기사 본문:", Body[:100], "...")
+logging.info("크롤링 완료")
 
 # BeautifulSoup이 실제로 HTMl을 어떻게 구조화했는지, soup 객체 살펴보기
 print(soup.prettify()[:500])
