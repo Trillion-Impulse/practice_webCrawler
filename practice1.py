@@ -15,6 +15,7 @@ try:
     # HTML 요청
     r = requests.get(url, headers=headers)
     r.raise_for_status()
+    html = r.text
 except requests.exceptions.RequestException as e:
         print("요청 실패:",e)
         sys.exit(1)
