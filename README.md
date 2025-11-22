@@ -1,6 +1,141 @@
 # practice_webCrawler
 ***
-## with python
+
+## 전체 파일 기술 스택 총 정리
+
+```
+📦 Web Crawling Tech Stack
+│
+├── 🛰 HTTP & Network (HTTP 요청 & 세션 관리)
+│   ├── requests — 기본 HTTP GET 요청
+│   ├── requests.Session() — 쿠키 유지, 세션 기반 요청
+│   ├── HTTP Headers
+│   │   ├── User-Agent
+│   │   ├── Referer
+│   │   ├── X-Requested-With
+│   │   └── etc.
+│   ├── Cookies — 네이버 AJAX 요청 분석을 위한 쿠키 전달
+│   └── Query Parameters(params) — API / AJAX 요청 구성
+│
+├── 🧩 HTML Parsing (정적 크롤링)
+│   ├── BeautifulSoup (bs4)
+│   │   ├── find / find_all
+│   │   ├── select (CSS Selector)
+│   │   ├── get_text(), .attrs
+│   │   ├── prettify — HTML 구조 시각화
+│   │   └── 태그 탐색 및 attribute 기반 데이터 추출
+│
+├── ⚡ Dynamic Crawling (동적 페이지 크롤링 - Selenium)
+│   ├── Selenium WebDriver
+│   │   ├── webdriver.Chrome
+│   │   ├── WebDriverWait, expected_conditions
+│   │   ├── By.XPATH, CSS_SELECTOR
+│   │   ├── execute_script — JavaScript scroll (유튜브 infinite scroll)
+│   │   └── 동적 DOM 렌더링 제어
+│   └── webdriver_manager — ChromeDriver 자동 설치
+│
+├── 📄 Data Storage (데이터 저장)
+│   ├── CSV
+│   │   ├── pandas.to_csv()
+│   │   ├── csv.writer / writerows
+│   │   └── csv.DictWriter
+│   ├── JSON
+│   │   └── pandas.to_json()
+│   └── Database (MySQL)
+│       ├── pymysql
+│       ├── INSERT / executemany
+│       └── dict 언패킹(**DB_CONFIG)
+│
+├── 🛡 Error Handling & Stability (예외 처리 & 안정성)
+│   ├── try-except — 예외 처리
+│   ├── requests.exceptions 핸들링
+│   ├── logging — 실행 로그 기록
+│   ├── max_retries — 재시도 로직
+│   ├── timeout — 응답 지연 방지
+│   └── time.sleep — 과부하 방지 및 자연스러운 요청
+│
+├── 🔍 Network Reverse Engineering (네트워크 분석 & 비공식 API 역공학)
+│   ├── Chrome DevTools Network 패널 분석
+│   ├── AJAX 요청 URL, Query Params 추출
+│   ├── 헤더/쿠키 기반 요청 재현
+│   ├── JSON 구조 분석 → HTML fragment 파싱
+│   └── 네이버 뉴스 AJAX API 요청 재현 시도 (응답 검증 문제로 실패)
+│
+└── 🧰 기타 유틸리티
+    ├── urllib.parse.quote — URL 인코딩
+    ├── 리스트 컴프리헨션 및 enumerate
+    └── HTML에서 image, title, 속성 추출
+```
+
+<br>
+
+---
+
+<br>
+
+## 파일별 기능 설명
+
+1. `practice1.py`
+    - 네이버 단일 뉴스 페이지 크롤링 (정적 HTML)
+    - 기술 스택
+        - requests
+        - BeautifulSoup
+        - logging
+        - HTML 태그 기반 파싱
+        - try-except 기반 예외 처리
+        - sys.exit() 기반 종료 코드 반환
+
+1. `practice2.py`
+    - 네이버 금융 뉴스 목록 다중 페이지 크롤링 및 데이터 저장 (정적 HTML)
+    - 기술 스택
+        - requrests
+        - BeautifulSoup
+        - 재시도 로직
+            - request.get 요청 실패 시 상태코드 반환
+            - 지정한 횟수 만큼 재시도
+            - time.spleep()으로 재시도 사이에 강제 딜레이
+        - 페이지네이션
+        - pandas
+        - csv
+        - pymysql
+            - connect, cursor 사용
+            - try-except-finally 사용으로 예외처리 및 안전하게 연결 종료
+
+1. `practice3.py`
+    - 유튜브 스포츠 탭 동적 스크롤 크롤링
+    - 기술 스택
+        - selenium
+        - webdriver_manager
+        - WebdriverWait + expected_conditions
+        - 무한 스크롤 구현
+            - max_scrolls을 지정해 유한번 스크롤
+            - 영상 개수를 기준으로 새 영상 로딩 대기 함수 구현
+            - try-except에서 TimeoutException 예외 처리
+        - XPath, CSS Selector
+
+1. `practice4.py`
+    - 네이버 뉴스 동적 스크롤 페이지 AJAX 역공학 시도 (실패 기록)
+    - 기술 스택
+        - requests
+        - AJAX Request 분석
+        - Query Parameters 분석
+        - Header, Cookies, Session 구성
+        - JSON 응답 파싱 시도
+        - BeautifulSoup HTML 파싱 예정
+    - 상태코드 200으로 정상 연결되었지만, 데이터가 넘어오지 않음
+        - headers 변경 시도
+        - Session 기반 Cookies 구성 시도
+    - AJAX 역공학의 한계, 공식 API가 없을 때의 문제를 체험
+        
+<br>
+
+---
+
+<br>
+
+## 관련 지식
+
+### with python
 1. 주요 도구 및 라이브러리
     1. Requests: HTTP 요청을 보내는 라이브러리로, 페이지 내용을 가져오는 데 사용
     1. BeautifulSoup: HTML 문서를 파싱하고, 원하는 데이터를 추출하는 데 사용
@@ -16,7 +151,7 @@
     1. BeautifulSoup이나 Scrapy를 사용하여 복잡한 웹 크롤링도 쉽게 처리할 수 있음
     1. 비동기 처리가 필요할 경우 asyncio나 aiohttp를 활용할 수 있음
 
-## with java
+### with java
 1. 주요 도구 및 라이브러리
     1. Jsoup: 자바에서 HTML을 파싱하고, 데이터를 추출하는 데 사용되는 라이브러리, 파이썬의 BeautifulSoup과 비슷한 역할
     1. HttpClient: HTTP 요청을 보내는 데 사용, 자바에서는 HttpURLConnection 또는 Apache HttpClient를 사용
@@ -28,7 +163,7 @@
     1. 자바에서는 HttpClient를 사용하여 HTTP 요청을 보낼 수 있음, 이는 고급 옵션을 제공하지만 설정이 파이썬보다 다소 복잡
     1. 자바는 동기화 및 멀티스레딩을 활용하여 대규모 데이터 크롤링을 할 때 유리할 수 있음
 
-## python vs java
+### python vs java
 |항목|python|java|
 |---|---|---|
 |개발 속도|빠름|다소 느림|
@@ -39,8 +174,6 @@
 
 - python은 빠르게 개발하고 실험해 볼 수 있는 환경을 제공, 간단한 크롤링이나 동적 페이지 크롤링을 할 때 유리
 - java는 대규모 크롤링이나 성능이 중요한 경우에 더 적합, 멀티스레딩 및 고급 설정을 통해 더 많은 데이터를 효율적으로 처리 가능
-
-## 관련 지식
 
 ### DOM
 - Document Object Model
