@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import sys
 
 # 크롤링할 URL 
 url = "https://n.news.naver.com/mnews/article/011/0004555589"
@@ -10,16 +11,13 @@ headers = {
                   "AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/120.0.0.0 Safari/537.36"
 }
-
-# HTML 요청
-r = requests.get(url, headers=headers)
-
-# 정상 응답 확인
-if r.status_code == 200:
-    html = r.text
-else:
-    print("요청 실패:",r.status_code)
-    exit()
+try:
+    # HTML 요청
+    r = requests.get(url, headers=headers)
+    r.raise_for_status()
+except requests.exceptions.RequestException as e:
+        print("요청 실패:",e)
+        sys.exit(1)
 
 # beautifulsoup 객체 생성
 soup = BeautifulSoup(html, "html.parser")
