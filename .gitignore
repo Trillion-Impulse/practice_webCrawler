@@ -15,3 +15,6 @@ __pycache__/
 
 # json 파일
 *.json
+
+# log 파일
+*.log
