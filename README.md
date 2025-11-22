@@ -375,3 +375,74 @@
         - 어떤 오류인지
     - 운영체제와 다른 프로그램에게 알려주는 신호
 
+### 로그
+- logging이란 프로그램이 실행되는 동안 발생한 사건, 상태, 오류, 진행 상황 등을 파일이나 콘솔에 기록하는 기능
+- 목적
+    - 프로그램이 잘 동작했는지 확인
+    - 오류 발생 시 원인 파악
+    - 자동화 환경에서 상태 전달 (예: Windows Task Scheduler, Docker, Airflow)
+- 로그 파일: 일반적으로 .log 확장자를 사용, 텍스트 파일 형태로 저장
+- Python에서 로그를 다루는 라이브러리
+    - 라이브러리: logging (Python 표준 라이브러리)
+    - 설치 필요 없음, Python 기본 내장
+    - 주요 특징:
+    - 다양한 로그 레벨 지원: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    - 파일, 콘솔, 네트워크 등 다양한 출력 대상 설정 가능
+    - 포맷 지정 가능 (시간, 레벨, 메시지 등)
+- 예시
+    ```
+    # Python 표준 logging 모듈
+    import logging
+
+    logging.basicConfig(
+        filename="crawler.log",
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        encoding="utf-8"
+    )
+    ```
+- logging.basicConfig(...)
+    - 로그 시스템 초기 설정 함수
+    - 프로그램 전체에서 한 번만 호출
+    - 매개변수
+        | 매개변수                                               | 의미                                                                 |
+        | -------------------------------------------------- | ------------------------------------------------------------------ |
+        | `filename="crawler.log"`                           | 로그를 기록할 **파일 이름**. 현재 스크립트가 실행되는 폴더에 생성됨                           |
+        | `level=logging.INFO`                               | 로그 **레벨** 지정. INFO 이상(`INFO`, `WARNING`, `ERROR`, `CRITICAL`)만 기록됨 |
+        | `format="%(asctime)s [%(levelname)s] %(message)s"` | 로그 **출력 형식** 지정                                                    |
+        | `encoding="utf-8"`                                 | 로그 파일 **인코딩**. 한글 깨짐 방지                                            |
+        - format 구성 요소
+            - %(asctime)s → 로그 발생 시간
+            - %(levelname)s → 로그 레벨 (INFO, ERROR 등)
+            - %(message)s → 실제 로그 메시지
+- 로그 기록 메서드
+    - 로그 기록은 logging 모듈의 레벨별 함수를 사용
+    | 메서드                  | 의미           | 사용 예         |
+    | -------------------- | ------------ | ------------ |
+    | `logging.debug()`    | 개발 단계 디버그용   | 변수 값, 상세 상태  |
+    | `logging.info()`     | 일반 정보, 진행 상태 | "크롤링 시작"     |
+    | `logging.warning()`  | 경고, 잠재적 문제   | "데이터 없음"     |
+    | `logging.error()`    | 오류 발생        | "HTTP 요청 실패" |
+    | `logging.critical()` | 심각한 오류       | "시스템 치명적 오류" |
+- 로그 파일 저장
+    - filename="crawler.log" 지정했으므로, 실행한 스크립트와 동일한 폴더에 crawler.log 파일 생성
+        - 파일 내용 예시
+            ```
+            2025-11-22 14:33:12,123 [INFO] 크롤링 시작: https://n.news.naver.com/mnews/article/011/0004555589
+            2025-11-22 14:33:13,456 [INFO] HTML 파싱 완료
+            2025-11-22 14:33:13,457 [INFO] 크롤링 완료
+            ```
+- 로그와 종료 코드의 관계
+    - 로그 기록 후, 프로그램 상태를 종료 코드로 반환
+    - 예시
+        ```
+        try:
+            r = requests.get(url, headers=headers, timeout=5)
+            r.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            logging.error(f"HTTP 요청 실패: {e}")
+            sys.exit(1)  # 오류 종료
+        ```
+        - 로그 → 어떤 문제가 발생했는지 기록
+        - 종료 코드 → 외부 스케줄러/자동화 시스템이 성공/실패 판단
+        - 로그는 사람용/파일 기록용, 종료 코드는 시스템용
