@@ -274,3 +274,24 @@
     | **API 기반 크롤링** | AJAX 요청을 Python에서 `requests`로 직접 호출하는 방식 |
 - AJAX는 웹페이지가 새로고침 없이 서버의 API로부터 데이터(JSON)를 받아오는 기술이며,
     - AJAX 요청을 그대로 Python에서 호출하면 그것이 바로 API 기반 크롤링이다.
+
+### 네이버 뉴스 AJAX 역공학 방식 크롤링 시도 실패 기록
+- AJAX 요청에서 확인해야 하는 요소
+    - Request URL: 요청을 보내는 엔드포인트 주소
+    - Query String Parameters (qs): 요청 시 전달되는 파라미터 (검색어, 페이지 번호, 정렬 등)
+    - Headers
+    - User-Agent: 브라우저 환경 흉내
+    - Referer: 요청이 발생한 페이지
+    - X-Requested-With: XMLHttpRequest 여부
+    - 기타 서버에서 요구하는 인증/보안 헤더
+    - Cookies: 세션 관리나 로그인 정보, 브라우저에서 생성되는 특정 쿠키
+    - Response
+    - 정상적으로 JSON 데이터가 오는지
+    - JSON 내부에 HTML fragment가 포함되어 있는지
+    - HTML fragment 내에서 필요한 데이터(뉴스 링크, 제목, 내용)를 추출할 수 있는 구조 확인
+- 크롤러 코드 작성 시 고려할 사항
+    - requests 모듈을 사용하여 GET/POST 요청을 보낼 수 있음
+    - URL, Query Parameters, Headers, Cookies를 설정
+    - 응답이 JSON이면 .json()으로 파싱, HTML fragment는 BeautifulSoup 등으로 파싱
+    - 반드시 응답 상태 코드 확인 (response.status_code)
+    - 응답 내용 길이 확인 → 빈 응답인지 확인 (len(response.text))
