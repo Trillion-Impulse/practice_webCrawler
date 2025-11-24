@@ -88,12 +88,12 @@
 1. `practice2.py`
     - 네이버 금융 뉴스 목록 다중 페이지 크롤링 및 데이터 저장 (정적 HTML)
     - 기술 스택
-        - requrests
+        - requests
         - BeautifulSoup
         - 재시도 로직
             - request.get 요청 실패 시 상태코드 반환
             - 지정한 횟수 만큼 재시도
-            - time.spleep()으로 재시도 사이에 강제 딜레이
+            - time.sleep()으로 재시도 사이에 강제 딜레이
         - 페이지네이션
         - pandas
         - csv
