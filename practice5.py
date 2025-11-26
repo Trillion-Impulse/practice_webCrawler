@@ -27,6 +27,7 @@ def crawl_title_sync(page, max_retries=3, delay=2):
             r = requests.get(url,headers=headers, timeout=5)
             # 상태 코드 점검
             if r.status_code == 200:
+                html = r.text
                 break # 요청 성공 시 반복 종료
             else:
                 print(f"요청 실패 (상태 코드: {r.status_code}) - {attempt}/{max_retries} 재시도")
@@ -38,7 +39,7 @@ def crawl_title_sync(page, max_retries=3, delay=2):
         return []
     
     # BeautifulSoup 객체 생성
-    Soup = BeautifulSoup(r.text, "html.parser")
+    Soup = BeautifulSoup(html, "html.parser")
 
     # 기사 추출
     Articles = Soup.find_all("dd", class_="articleSubject")
