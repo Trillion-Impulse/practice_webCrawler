@@ -98,7 +98,7 @@ async def crawl_title_async(session, page, max_retries=3, delay=2):
                     return Titles_async
                 else:
                     print(f"요청 실패 (상태 코드: {r.status}) - {attempt}/{max_retries} 재시도")
-        except Exception as e:
+        except aiohttp.ClientError as e:
             print(f"{page} 페이지 예외 발생: {e} - {attempt}/{max_retries} 재시도")
         await asyncio.sleep(delay)
     else:
