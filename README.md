@@ -126,7 +126,20 @@
         - headers 변경 시도
         - Session 기반 Cookies 구성 시도
     - AJAX 역공학의 한계, 공식 API가 없을 때의 문제를 체험
-        
+
+1. `practice5.py`
+    - 네이버 금융 뉴스 목록 다중 페이지 비동기 크롤링
+    - 동기 크롤링과 성능 비교
+    - 기술 스택
+        - requests (동기)
+        - aiohttp + asyncio (비동기)
+        - BeautifulSoup
+        - try-except 기반 예외 처리
+        - 재시도 로직
+        - 페이지네이션
+        - 동기 vs 비동기 성능 측정
+            - time.time() 기반 소요 시간 측정
+
 <br>
 
 ---
