@@ -665,6 +665,52 @@
     - HTTP 요청을 대량으로 보내는 웹 크롤러
     - API 수백~수천 개 호출
     - 파일 다운로드, DB 요청 등 I/O 중심 작업
+- 비동기 라이브러리 httpx vs aiohttp 비교
+    | 항목      | httpx               | aiohttp                |
+    | ------- | ------------------- | ---------------------- |
+    | 비동기 지원  | ✔                   | ✔ (전용)                 |
+    | 동기 지원   | ✔                   | ❌                      |
+    | 속도      | 빠름                  | 매우 빠름(특히 고부하 상황)       |
+    | API 사용감 | requests와 매우 비슷(쉬움) | 약간 복잡                  |
+    | HTTP/2  | ✔                   | 제한적                    |
+    | 웹서버 기능  | ❌ 클라이언트 전용          | ✔ aiohttp web (서버도 가능) |
+    | 커브      | 쉬움                  | 조금 더 어려움               |
+- aiohttp와 httpx 모두 asyncio와 함께 사용하는 이유
+    - asyncio는 비동기 처리를 가능하게 하는 엔진(이벤트 루프 + 코루틴 실행기)이기 때문에 비동기 HTTP 라이브러리들이 꼭 필요로 함
+    - 즉 httpx(aio)나 aiohttp는 비동기 I/O 기능을 제공하지만, 그걸 실제로 돌려주는 엔진은 asyncio임
+    - asyncio 안에는 정확히 뭐가 들어있길래 필수인가?
+        1. 이벤트 루프(Event Loop) → 비동기의 심장
+            - 비동기 코드를 실제로 스케줄링하고 실행하고 기다리고 돌려주는 엔진
+            - 대기 시간이 있는 작업(I/O)을 멈추지 않고 동시에 처리하게 해주는 조정자
+            - HTTP 요청처럼 I/O가 많은 작업에 필수
+            - httpx.AsyncClient 도 aiohttp.ClientSession 도 이벤트 루프가 없으면 “await” 작업을 실행할 수가 없음
+        1. 코루틴(coroutine) 실행 시스템
+            - async/await는 문법일 뿐이고, 이걸 실제로 비동기 함수로 실행하는 건 asyncio임
+            - 예시
+                - `async def fetch(): ...`이 함수는 asyncio가 돌리기 전까지는 그저 코루틴 객체일 뿐
+                - 실행하려면, `asyncio.run(fetch())` 이것을 통해서만 코루틴이 실행됨
+        1. Future / Task (비동기 작업의 단위)
+            - 코루틴을 “작업 단위”로 포장하는 것이 Task
+            - httpx.AsyncClient().get() → 내부에서 await를 사용
+            - aiohttp.ClientSession().get() → 내부에서 await 사용
+            - 이 모든 await는 사실 Task가 이벤트 루프에 등록된다는 뜻
+            - asyncio가 Task/Future를 관리해주지 않으면 비동기가 아예 불가능
+        1. I/O multiplexer (epoll/kqueue/select 기반)
+            - 파이썬 레벨에서 I/O를 비동기로 처리하려면 OS의 논블로킹 I/O 호출을 사용해야 함
+            - 이것을 wrapping 해서 제공하는 것이 바로 asyncio
+            - aiohttp나 httpx는 비동기 소켓 API → asyncio가 제공하는 함수를 호출하는 식으로 동작
+            - asyncio가 실제 I/O 비동기 처리 기능을 제공
+            - await asyncio.sleep() — 논블로킹 방식으로 기다림
+    - 결론
+        - ✔ 왜 asyncio를 사용해야 하는가?
+            - 비동기 HTTP 요청을 실제로 처리하려면 이벤트 루프와 비동기 소켓 API가 필수이기 때문
+        - ✔ 어떤 함수나 메서드가 필요해서인가?
+            - asyncio.run(), create_task(), sleep() (직접 사용)
+            - loop.sock_recv(), sock_sendall() 같은 비동기 소켓 함수(라이브러리 내부)
+        - ✔ httpx / aiohttp가 asyncio를 대체할 수 있는가?
+            - NO
+            - aiohttp/httpx는 HTTP 클라이언트일 뿐, 비동기 엔진은 asyncio가 제공하는 것
+        - aiohttp, httpx.AsyncClient는 asyncio 위에서만 돌아가는 비동기 HTTP 클라이언트
 
 #### 멀티스레딩(Multithreading)
 - 하나의 프로세스 안에서 여러 스레드를 동시에 실행하는 방식
