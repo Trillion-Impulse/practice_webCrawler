@@ -1,11 +1,13 @@
 import requests
 from urllib.parse import quote
 from bs4 import BeautifulSoup
+from config import PRACTICE_CONFIGS
+
 
 # 검색어
-query = "삼성전자"
+query = PRACTICE_CONFIGS.get("PRACTICE4").get("QUERY")
 # 요청 URL
-url = "https://s.search.naver.com/p/newssearch/3/api/tab/more"
+url = PRACTICE_CONFIGS.get("PRACTICE4").get("URL")
 
 # Devtools에서 확인한 Query String Parameters
 params = {
@@ -16,7 +18,8 @@ params = {
 }
 
 # Referer에 query를 포함할 경우 반드시 URL 인코딩
-referer = f"https://search.naver.com/search.naver?where=news&query={quote(query)}"
+referer_base = PRACTICE_CONFIGS.get("PRACTICE4").get("REFERER_BASE")
+referer = f"{referer_base}?where=news&query={quote(query)}"
 
 # 브라우저처럼 보이게 User-Agent 설정
 headers = {
