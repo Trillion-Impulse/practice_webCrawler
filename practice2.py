@@ -4,12 +4,15 @@ import time
 import pandas as pd
 import csv
 import pymysql
-from config import DB_CONFIG
+from config import DB_CONFIG, PRACTICE_CONFIGS
+
+# 크롤링할 URl의 베이스를 config에서 가져옴
+url_base = PRACTICE_CONFIGS.get("PRACTICE2").get("URL_BASE")
 
 # 페이지네이션된 목록에 있는 기사의 제목들을 받아오는 함수
 def crawl_title(page, max_retries=3, delay=2):
-    # 크롤링할 uRL
-    url = f"https://finance.naver.com/news/mainnews.naver?&page={page}"
+    # 크롤링할 URL
+    url = f"{url_base}?&page={page}"
 
     # 네이버는 User-Agent 없으면 차단 가능성 있음
     headers = {
