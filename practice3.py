@@ -6,6 +6,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+from config import PRACTICE_CONFIGS
+
+# 크롤링할 URL을 config에서 가져옴
+url = PRACTICE_CONFIGS.get("PRACTICE3").get("URL")
 
 driver=None
 
@@ -14,8 +18,8 @@ try:
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.maximize_window()
 
-    # 유튜브 메인 페이지 접속
-    driver.get("https://www.youtube.com/")
+    # URL의 메인 페이지 접속
+    driver.get(url)
     wait = WebDriverWait(driver, 10) # 최대 10초 기다림
 
     # 왼쪽 네비게이션에서 "스포츠" 클릭
