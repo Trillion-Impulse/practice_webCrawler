@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import sys
 import logging
+from config import PRACTICE_CONFIGS
 
 logging.basicConfig(
     filename="crawler.log",
@@ -10,10 +11,10 @@ logging.basicConfig(
     encoding="utf-8"
 )
 
-# 크롤링할 URL 
-url = "https://n.news.naver.com/mnews/article/011/0004555589"
+# 크롤링할 URL을 config에서 가져옴
+url = PRACTICE_CONFIGS.get("PRACTICE1").get("URL")
 
-# 네이버는 User-Agent 없으면 차단 가능성 있음
+# User-Agent 없으면 차단 가능성 있음
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                   "AppleWebKit/537.36 (KHTML, like Gecko) "
