@@ -3,12 +3,15 @@ import asyncio
 import aiohttp
 from bs4 import BeautifulSoup
 import time
+from config import PRACTICE_CONFIGS
+
+url_base = PRACTICE_CONFIGS.get("PRACTICE5").get("URL_BASE")
 
 # 동기
 # 페이지네이션된 목록에 있는 기사의 제목들을 받아오는 함수
 def crawl_title_sync(page, max_retries=3, delay=2):
     # 크롤링할 URL
-    url = f"https://finance.naver.com/news/mainnews.naver?&page={page}"
+    url = f"{url_base}?&page={page}"
 
     # 네이버는 User-Agent 없으면 차단 가능성 있음
     headers = {
@@ -66,7 +69,7 @@ sync_end_time = time.time()
 # 페이지네이션된 목록에 있는 기사들의 제목을 받아오는 비동기 함수
 async def crawl_title_async(session, page, max_retries=3, delay=2):
     # 크롤링할 URL
-    url = f"https://finance.naver.com/news/mainnews.naver?&page={page}"
+    url = f"{url_base}?&page={page}"
 
     # 네이버는 User-Agent 없으면 차단 가능성 있음
     headers = {
