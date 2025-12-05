@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+from urllib.parse import urljoin
 
 # 환경변수 설정
 try:
@@ -70,7 +71,7 @@ try:
             title = t if (t:=title_selector.get_text(strip=True)) else "제목 없음"
             news_list.append({
                 "title": title,
-                "href": href,
+                "href": urljoin(url, href),
             })
 except Exception as e:
     print("파싱 실패:", e)
