@@ -30,5 +30,8 @@ PRACTICE_CONFIGS={
     },
     "PRACTICE5" : {
         "URL_BASE": os.getenv("PRACTICE5_URL_BASE")
-    }
+    },
+    "PRACTICE6" : {
+        "URL": os.getenv("PRACTICE6_URL")
+    },
 }
