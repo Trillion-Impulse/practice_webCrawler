@@ -9,6 +9,10 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from urllib.parse import urljoin
+import pandas as pd
+import time
+from datetime import datetime
+
 
 # 환경변수 설정
 try:
@@ -78,6 +82,13 @@ except Exception as e:
     sys.exit(3) # 종료코드 3: 파싱 에러
 else:
     print("HTML 파싱 성공")
+
+# csv 파일로 저장
+df = pd.DataFrame(news_list)
+now = datetime.now().strftime("%Y%m%d_%H%M%S")
+timestamp = int(time.time())
+filename = f"news_list_{now}_{timestamp}.csv"
+df.to_csv(filename, index=False, encoding="utf-8-sig")
 
 # print(soup.prettify()[:300])
 # print(news_list)
