@@ -585,8 +585,12 @@
 - logging이란 프로그램이 실행되는 동안 발생한 사건, 상태, 오류, 진행 상황 등을 파일이나 콘솔에 기록하는 기능
 - 목적
     - 프로그램이 잘 동작했는지 확인
+    - 단계별 실행 추적
     - 오류 발생 시 원인 파악
     - 자동화 환경에서 상태 전달 (예: Windows Task Scheduler, Docker, Airflow)
+- print 대비 장점
+    - print는 단순 출력만 가능
+    - logging은 로그 레벨, 출력 포맷, 핸들러 등 설정 가능
 - 로그 파일: 일반적으로 .log 확장자를 사용, 텍스트 파일 형태로 저장
 - Python에서 로그를 다루는 라이브러리
     - 라이브러리: logging (Python 표준 라이브러리)
@@ -596,48 +600,158 @@
     - 파일, 콘솔, 네트워크 등 다양한 출력 대상 설정 가능
     - 포맷 지정 가능 (시간, 레벨, 메시지 등)
 - 예시
-    ```
-    # Python 표준 logging 모듈
-    import logging
+    1. 단일 구조
+        ```
+        # Python 표준 logging 모듈
+        import logging
 
-    logging.basicConfig(
-        filename="crawler.log",
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(message)s",
-        encoding="utf-8"
-    )
-    ```
-- logging.basicConfig(...)
-    - 로그 시스템 초기 설정 함수
-    - 프로그램 전체에서 한 번만 호출
-    - 매개변수
-        | 매개변수                                               | 의미                                                                 |
-        | -------------------------------------------------- | ------------------------------------------------------------------ |
-        | `filename="crawler.log"`                           | 로그를 기록할 **파일 이름**. 현재 스크립트가 실행되는 폴더에 생성됨                           |
-        | `level=logging.INFO`                               | 로그 **레벨** 지정. INFO 이상(`INFO`, `WARNING`, `ERROR`, `CRITICAL`)만 기록됨 |
-        | `format="%(asctime)s [%(levelname)s] %(message)s"` | 로그 **출력 형식** 지정                                                    |
-        | `encoding="utf-8"`                                 | 로그 파일 **인코딩**. 한글 깨짐 방지                                            |
-        - format 구성 요소
-            - %(asctime)s → 로그 발생 시간
-            - %(levelname)s → 로그 레벨 (INFO, ERROR 등)
-            - %(message)s → 실제 로그 메시지
+        logging.basicConfig(
+            filename="crawler.log",
+            level=logging.INFO,
+            format="%(asctime)s [%(levelname)s] %(message)s",
+            encoding="utf-8"
+        )
+        ```
+        - logging.basicConfig(...)
+            - 간단한 스크립트용
+                - 단일 파일 스크립트
+                - 실험용 코드
+                - 구조 없는 간단한 프로그램에 사용
+            - handler로 제어 불가
+            - root logger 사용
+            - 로그 시스템 초기 설정 함수
+            - 프로그램 전체에서 한 번만 호출
+            - 매개변수
+                | 매개변수                                               | 의미                                                                 |
+                | -------------------------------------------------- | ------------------------------------------------------------------ |
+                | `filename="crawler.log"`                           | 로그를 기록할 **파일 이름**. 현재 스크립트가 실행되는 폴더에 생성됨                           |
+                | `level=logging.INFO`                               | 로그 **레벨** 지정. INFO 이상(`INFO`, `WARNING`, `ERROR`, `CRITICAL`)만 기록됨 |
+                | `format="%(asctime)s [%(levelname)s] %(message)s"` | 로그 **출력 형식** 지정                                                    |
+                | `encoding="utf-8"`                                 | 로그 파일 **인코딩**. 한글 깨짐 방지                                            |
+                - format 구성 요소
+                    - %(asctime)s → 로그 발생 시간
+                    - %(levelname)s → 로그 레벨 (INFO, ERROR 등)
+                    - %(message)s → 실제 로그 메시지
+        - 로그 파일 저장
+            - filename="crawler.log" 지정했으므로, 실행한 스크립트와 동일한 폴더에 crawler.log 파일 생성
+                - 파일 내용 예시
+                    ```
+                    2025-11-22 14:33:12,123 [INFO] 크롤링 시작: https://n.news.naver.com/mnews/article/011/0004555589
+                    2025-11-22 14:33:13,456 [INFO] HTML 파싱 완료
+                    2025-11-22 14:33:13,457 [INFO] 크롤링 완료
+                    ```
+    1. 여러개의 로거 사용 구조에서 재사용 가능하도록 모듈화
+        ```
+        import logging
+        import os
+
+        def get_logger(name: str) -> logging.Logger:
+            """
+            로거 생성 함수
+            
+            Args:
+                name (str): 로거 이름 (보통 모듈 이름, __name__ 사용)
+            
+            Returns:
+                logging.Logger: 설정된 로거 객체
+            """
+            # 환경변수에서 로그 레벨 가져오기, 없으면 INFO
+            log_level_str = os.getenv("LOG_LEVEL", "INFO").upper()
+            log_level = getattr(logging, log_level_str, logging.INFO)
+
+            # 로거 생성 및 최소 출력 레벨 설정
+            logger = logging.getLogger(name)
+            logger.setLevel(log_level)
+
+            # 중복 핸들러 방지
+            if not logger.handlers:
+                # 콘솔 출력 핸들러
+                console_handler = logging.StreamHandler()
+                console_handler.setLevel(log_level)
+
+                # 로그 포맷 지정
+                formatter = logging.Formatter(
+                    "[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S"
+                )
+                console_handler.setFormatter(formatter)
+
+                # 핸들러 등록 및 루트 로거 전파 비활성화
+                logger.addHandler(console_handler)
+                logger.propagate = False
+
+            return logger
+        ```
+        - 주요 설정 설명
+            | 설정/속성                                           | 설명                                  | 이유                                         |
+            | ----------------------------------------------- | ----------------------------------- | ------------------------------------------ |
+            | `name`                                          | 로거 이름 (보통 `__name__`)               | 모듈 단위로 로그를 구분하여 기록 가능                      |
+            | `log_level_str`                                 | 환경변수 `LOG_LEVEL`에서 가져옴, 디폴트 INFO    | 운영 환경에서는 INFO, 개발 환경에서는 DEBUG 등 유연하게 조정 가능 |
+            | `getattr(logging, log_level_str, logging.INFO)` | 문자열("INFO") → `logging.INFO` 상수로 변환 | 환경변수 문자열을 실제 로그 레벨 객체로 변환                  |
+            | `StreamHandler()`                               | 콘솔 출력용 핸들러                          | 로그를 화면에서 확인 가능                             |
+            | `formatter`                                     | 로그 포맷 지정                            | `[시간] [모듈] [레벨] 메시지` 순서로 표시 → 실무에서 흔히 사용   |
+            | `logger.propagate = False`                      | 상위(root) 로거로 전파 차단                  | 중복 로그 출력 방지                                |
+        - 로거의 구조
+            ```
+            logger
+            ├─ handler 1 → 출력
+            ├─ handler 2 → 출력
+            ```
+            - logger는 메세지를 생성, 기록할 수 있는 도구
+            - handler는 메세지를 실제로 보여주거나 저장하는 도구
+                - 메세지를 어디로 보낼지 결정
+                - StreamHandler: 콘솔
+                - FileHandler: 파일
+                - SMTPHandler: 이메일
+            - 핸들러가 많으면 같은 로그가 여러번 출력
+            - `if not logger.handlers:`해서 핸들러 중복 방지
+            - `logger.propagate = False`해서 상위 로거로 전파 차단
+                - 상위로 전달하면 상위에서 같은 로그 또 출력
+        - 로거 객체(logger)는 핸들러(handler)를 등록할 수 있는 구조를 가짐
+            - 핸들러 생성: `handler = logging.StreamHandler()`
+            - 핸들러 옵션/포맷 지정(선택)
+            - 로거에 핸들러 등록: `logger.addHandler(handler)`
+                - 이렇게 하면 handler가 logger에 소속됨
+            - `logger.handlers`를 통해 등록된 핸들러 확인 가능
+
 - 로그 기록 메서드
     - 로그 기록은 logging 모듈의 레벨별 함수를 사용
+    - 로그 레벨 사용 예
         | 메서드                  | 의미           | 사용 예         |
         | -------------------- | ------------ | ------------ |
-        | `logging.debug()`    | 개발 단계 디버그용   | 변수 값, 상세 상태  |
-        | `logging.info()`     | 일반 정보, 진행 상태 | "크롤링 시작"     |
-        | `logging.warning()`  | 경고, 잠재적 문제   | "데이터 없음"     |
-        | `logging.error()`    | 오류 발생        | "HTTP 요청 실패" |
-        | `logging.critical()` | 심각한 오류       | "시스템 치명적 오류" |
-- 로그 파일 저장
-    - filename="crawler.log" 지정했으므로, 실행한 스크립트와 동일한 폴더에 crawler.log 파일 생성
-        - 파일 내용 예시
-            ```
-            2025-11-22 14:33:12,123 [INFO] 크롤링 시작: https://n.news.naver.com/mnews/article/011/0004555589
-            2025-11-22 14:33:13,456 [INFO] HTML 파싱 완료
-            2025-11-22 14:33:13,457 [INFO] 크롤링 완료
-            ```
+        | `.debug()`    | 개발 단계 디버그용   | 변수 값, 상세 상태  |
+        | `.info()`     | 일반 정보, 진행 상태 | "크롤링 시작"     |
+        | `.warning()`  | 경고, 잠재적 문제   | "데이터 없음"     |
+        | `.error()`    | 오류 발생        | "HTTP 요청 실패" |
+        | `.critical()` | 심각한 오류       | "시스템 치명적 오류" |
+    - 로그 레벨은 출력 스타일이 아니라 의미를 나타냄
+    - 로그 레벨은 출력할지 말지를 결정하는 필터
+        - 로거에 설정한 로그 레벨 이상의 로그만 출력
+        - 핸들러로 이중으로 제한 가능
+    - 루트 로거 사용할 때는 `logging.info()` 형식
+    - 커스텀 로거 사용할 때는 `logger.info()` 형식
+
+- root 로거
+    - Python logging 시스템에서 최상위에 항상 존재하는 기본 로거
+    - `import logging`하는 순간 자동 생성
+    - `logging.basicConfig()`가 root 로거에 핸들러를 추가해서 사용함
+    - 아무 설정 안 해도 로그가 나오게 하기 위한 안전장치
+    - 루트 로거의 기본 레벨은 `WARNING`
+        - 루트 로거 설정 따로 하지 않으면 'WARNING'레벨 이상 로그만 보임
+        - `logging.basicConfig(level=logging.INFO)` 이런식으로 변경해서 사용
+
+- 크롤러에서 예외 처리 시 스택 트레이스 기록
+    ```
+    try:
+        driver.get(url)
+    except Exception as e:
+        logger.error("HTML 요청 실패", exc_info=True)
+        raise RuntimeError("HTML 요청 실패") from e
+    ```
+    - `exc_info=True`: 예외 발생 시 스택 트레이스까지 로그에 출력
+    - `raise ... from e`: 호출한 상위로 원본 예외 전달
+        - 로그 외에도 프로그램 제어 흐름에서 오류 전파 가능
+
 - 로그와 종료 코드의 관계
     - 로그 기록 후, 프로그램 상태를 종료 코드로 반환
     - 예시
